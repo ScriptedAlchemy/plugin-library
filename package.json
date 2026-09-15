@@ -1,0 +1,18 @@
+{
+  "name": "plugin-library",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plugin Library explorer: browse installed and marketplace plugins, read every skill in full, hand one to a bot.",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "open": "node bin/plugin-library.mjs open",
+    "stop": "node bin/plugin-library.mjs stop"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "plugin-library": "bin/plugin-library.mjs"
+  }
+}
