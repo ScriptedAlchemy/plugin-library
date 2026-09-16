@@ -157,7 +157,8 @@
     if (L && L.author) byline.push(esc(L.author));
     if (L && L.semver) byline.push(`v${esc(L.semver)}`);
     if (p.category) byline.push(esc(p.category));
-    byline.push(`<span title="plugin id">#${esc(p.plugin_id)}</span>`);
+    if (/^\d+$/.test(p.plugin_id)) byline.push(`<span title="plugin id">#${esc(p.plugin_id)}</span>`);
+    else if (L) byline.push(`<span title="plugin directory">${esc(L.key)}</span>`);
 
     const chips = [p.installed ? `<span class="chip ok">Installed</span>` : `<span class="chip warn">Not installed</span>`];
     if (L) {

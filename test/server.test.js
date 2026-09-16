@@ -26,6 +26,13 @@ test.before(async () => {
   );
   fs.writeFileSync(path.join(pstack, "skills", "alpha", "SKILL.md"), "# Alpha\n");
   fs.writeFileSync(`${pstack}.installed`, "");
+  // The same plugin cached again under its catalog id: an alias, not a second install.
+  fs.cpSync(pstack, path.join(cache, "cursor-public", "9717366", "hash"), { recursive: true });
+  // A hand-installed plugin in plugins/local/<name>/ with no catalog row.
+  const local = fs.mkdtempSync(path.join(os.tmpdir(), "plugin-library-local-"));
+  fs.mkdirSync(path.join(local, "handmade", "skills", "solo"), { recursive: true });
+  fs.writeFileSync(path.join(local, "handmade", "plugin.json"), JSON.stringify({ name: "handmade", displayName: "Handmade" }));
+  fs.writeFileSync(path.join(local, "handmade", "skills", "solo", "SKILL.md"), "# Solo\n");
   fs.writeFileSync(gbot, `#!/usr/bin/env node
 const fs = require("node:fs");
 const args = process.argv.slice(2).filter((arg) => arg !== "--json");
@@ -34,7 +41,7 @@ process.stdout.write(JSON.stringify(args[0] === "send" ? { ok: true } : args[0] 
 `);
   fs.chmodSync(gbot, 0o755);
   child = spawn(process.execPath, [path.join(__dirname, "..", "server.js")], {
-    env: { ...process.env, PORT: "0", CURSOR_PLUGIN_CACHE: cache, GBOT_BIN: gbot, GBOT_CALLS: gbotCalls },
+    env: { ...process.env, PORT: "0", CURSOR_PLUGIN_CACHE: cache, CURSOR_PLUGIN_LOCAL: local, GBOT_BIN: gbot, GBOT_CALLS: gbotCalls },
     stdio: ["ignore", "pipe", "pipe"],
   });
   const port = await new Promise((resolve, reject) => {
@@ -53,13 +60,20 @@ test.after(() => child && child.kill());
 
 const status = async (p, init) => (await fetch(base + p, init)).status;
 
-test("/api/library joins installed rows to the cache", async () => {
+test("/api/library: installed means present in this machine's cache or local dir", async () => {
   const j = await (await fetch(base + "/api/library")).json();
   assert.equal(j.ok, true);
-  assert.ok(Array.isArray(j.installed) && Array.isArray(j.marketplace));
-  assert.ok(j.installed.length > 0);
-  assert.ok(j.installed.every((p) => typeof p.plugin_id === "string" && typeof p.skill_count === "number"));
-  assert.ok(j.installed.every((p) => !p.local || !("root" in p.local)), "no filesystem paths leak");
+  const ids = j.installed.map((p) => p.plugin_id).sort();
+  assert.deepEqual(ids, ["9717366", "local:handmade", "mkt:demo-kit", "mkt:solo"]);
+  const pstack = j.installed.find((p) => p.plugin_id === "9717366");
+  assert.equal(pstack.local.key, "cursor-public/pstack", "catalog row claims the slug dir, alias dir is folded in");
+  assert.equal(pstack.category, "MCP", "catalog copy joins onto the cached plugin");
+  const handmade = j.installed.find((p) => p.plugin_id === "local:handmade");
+  assert.equal(handmade.name, "Handmade");
+  assert.equal(handmade.skill_count, 1);
+  assert.ok(j.marketplace.every((p) => !p.installed && p.local === null));
+  assert.ok(!j.marketplace.some((p) => p.plugin_id === "9717366"), "an installed plugin is not also listed for sale");
+  assert.ok(j.installed.every((p) => !("root" in p.local)), "no filesystem paths leak");
 });
 
 test("doc and file routes serve from inside the plugin root only", async () => {

@@ -10,6 +10,7 @@ import bots from "./lib/bots.js";
 const {
   findLocalPlugin,
   getLocalPlugin,
+  indexLocalPlugins,
   toPublic,
   resolveInside,
   parseFrontMatter,
@@ -23,7 +24,7 @@ const PUBLIC_DIR = fs.existsSync(path.join(ROOT, "public"))
   : path.join(ROOT, "assets", "public");
 const PORT = Number(process.env.PORT || 8787);
 // Loopback by default: this server shells out to gbot and serves cache files
-// without auth. Set HOST=0.0.0.0 explicitly when exposing over Tailscale.
+// without auth. Set HOST=0.0.0.0 explicitly only on a network you trust.
 const HOST = process.env.HOST || "127.0.0.1";
 
 const MIME = {
@@ -182,45 +183,59 @@ function oneLine(s) {
 }
 
 /**
- * The browse model, joined once here: installed rows from the index, catalog
- * copy from the unified catalog, on-disk contents from the plugin cache, and
- * the Catalog's suggested skill grouping for pstack.
+ * Plugins present on this machine but absent from the catalog get their cache
+ * key as id (`local:gbot`, `cursor-public:foo`). Catalog ids are numeric, so
+ * the colon marks a synthetic id unambiguously and keeps the hash route intact.
+ */
+const syntheticId = (p) => `${p.marketplace}:${p.slug}`;
+
+/**
+ * The browse model, joined once here. "Installed" means present in this
+ * machine's plugin cache or local plugin directory; the catalog supplies
+ * marketplace copy, category and ids, and the Catalog's pstack dump supplies
+ * skill grouping. Catalog rows that name their cache directory are matched
+ * first so a looser name match can't claim a plugin another row owns.
  */
 function buildLibrary() {
-  const installedRows = readJson("data/installed-index.json").installed || [];
-  const catalog = readJson("data/unified-catalog.json").plugins || [];
-  const catalogById = new Map(catalog.map((p) => [String(p.stableId ?? ""), p]));
+  const catalog = (readJson("data/unified-catalog.json").plugins || []).filter((p) => p.stableId != null);
+  const cacheHint = (p) => (p.cache && p.cache.slug ? `${p.cache.marketplace}/${p.cache.slug}` : undefined);
+  const ordered = [...catalog.filter(cacheHint), ...catalog.filter((p) => !cacheHint(p))];
 
-  const installed = installedRows.map((row) => {
-    const id = String(row.plugin_id);
-    const cat = catalogById.get(id);
-    const hint = cat && cat.cache && cat.cache.slug ? `${cat.cache.marketplace}/${cat.cache.slug}` : undefined;
-    const local = findLocalPlugin(id, row.name, hint);
-    return {
+  const claimed = new Set();
+  const installed = [];
+  const marketplace = [];
+  for (const cat of ordered) {
+    const id = String(cat.stableId);
+    const hit = findLocalPlugin(id, cat.name, cacheHint(cat));
+    const local = hit && !claimed.has(hit.key) ? hit : null;
+    if (local) claimed.add(local.key);
+    (local ? installed : marketplace).push({
       plugin_id: id,
-      name: row.name,
-      description: oneLine(row.description) || (local && local.description) || oneLine(cat && cat.description),
-      category: (cat && cat.category) || null,
-      installed: true,
-      skill_count: local ? local.skills.length : Number(row.skill_count) || 0,
-      connector_count: Number(row.connector_count) || 0,
+      name: cat.name || (local && local.name) || "(unnamed)",
+      description: oneLine(cat.description) || oneLine(local && local.description),
+      category: cat.category || null,
+      installed: Boolean(local),
+      skill_count: local ? local.skills.length : Number(cat.skillCountReported ?? cat.skillCount) || 0,
+      connector_count: Number(cat.connectorCount) || 0,
       local: local ? toPublic(local) : null,
-    };
-  });
-  const installedIds = new Set(installed.map((p) => p.plugin_id));
-
-  const marketplace = catalog
-    .filter((p) => p.stableId != null && !installedIds.has(String(p.stableId)))
-    .map((p) => ({
-      plugin_id: String(p.stableId),
-      name: p.name || "(unnamed)",
+    });
+  }
+  // A directory named after a catalog id whose row already claimed its slug
+  // twin is the same plugin cached twice, not a second install.
+  const catalogIds = new Set(catalog.map((p) => String(p.stableId)));
+  for (const p of indexLocalPlugins()) {
+    if (claimed.has(p.key) || catalogIds.has(p.slug)) continue;
+    installed.push({
+      plugin_id: syntheticId(p),
+      name: p.name,
       description: oneLine(p.description),
-      category: p.category || null,
-      installed: false,
-      skill_count: Number(p.skillCountReported ?? p.skillCount) || 0,
-      connector_count: Number(p.connectorCount) || 0,
-      local: null,
-    }));
+      category: null,
+      installed: true,
+      skill_count: p.skills.length,
+      connector_count: p.hasMcp ? 1 : 0,
+      local: toPublic(p),
+    });
+  }
 
   const groups = {};
   try {

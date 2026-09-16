@@ -8,6 +8,7 @@ const path = require("path");
 const { makeCache } = require("./helpers");
 
 process.env.CURSOR_PLUGIN_CACHE = makeCache();
+process.env.CURSOR_PLUGIN_LOCAL = fs.mkdtempSync(path.join(os.tmpdir(), "pl-local-empty-"));
 const lib = require("../lib/local-plugins");
 
 test("parseFrontMatter: quoted, folded, literal, nested map", () => {
