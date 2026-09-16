@@ -13,7 +13,7 @@ Launch the explorer and put it in front of the user.
    node "${CURSOR_PLUGIN_ROOT}/bin/plugin-library.mjs" open --json $ARGUMENTS
    ```
 
-   If `CURSOR_PLUGIN_ROOT` is unset, the plugin lives at `~/.cursor/plugins/local/plugin-library`.
+   If `CURSOR_PLUGIN_ROOT` is unset, the plugin lives at `~/.cursor/plugins/local/plugin-library` after `node ./install.mjs`. The public repo is `https://github.com/ScriptedAlchemy/plugin-library`; a Mac path like `/Volumes/bigssd/.../plugin-library` is only a dev checkout.
    The result is `{ ok, url, resolved, started }`. `url` already contains the `#/p/<id>/s/<skill>` route when `$ARGUMENTS` matched a plugin name, plugin id, or skill id.
 
 2. Show it in the embedded browser when this session has one: call `browser_navigate` (cursor-ide-browser) with `url`.

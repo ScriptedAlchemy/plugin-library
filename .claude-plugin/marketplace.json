@@ -1,0 +1,14 @@
+{
+  "name": "plugin-library-marketplace",
+  "owner": {
+    "name": "ScriptedAlchemy"
+  },
+  "plugins": [
+    {
+      "name": "plugin-library",
+      "source": "./",
+      "version": "0.3.0",
+      "description": "Browse installed and marketplace plugins, read every skill in full, and open the Plugin Library explorer."
+    }
+  ]
+}

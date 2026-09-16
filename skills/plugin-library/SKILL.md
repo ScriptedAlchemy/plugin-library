@@ -7,6 +7,8 @@ description: Open or query the Plugin Library explorer when the user wants to br
 
 A local web explorer over the Cursor plugin cache and the Plugin Catalog. Three panes: plugins, a plugin's skills / agents / rules, and the full `SKILL.md` of whatever is clicked. "Apply to a bot" picks a target from the live `gbot` roster and confirms before anything is queued.
 
+Public repo: `https://github.com/ScriptedAlchemy/plugin-library`. After `node ./install.mjs`, expect the installed plugin root at `~/.cursor/plugins/local/plugin-library`. A Mac path like `/Volumes/bigssd/.../plugin-library` is only a development checkout, not the installed plugin location agents should assume.
+
 ## Commands
 
 ```sh
