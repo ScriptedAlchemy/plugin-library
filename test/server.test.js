@@ -30,7 +30,7 @@ test.before(async () => {
 const fs = require("node:fs");
 const args = process.argv.slice(2).filter((arg) => arg !== "--json");
 if (args[0] === "send") fs.appendFileSync(process.env.GBOT_CALLS, JSON.stringify(args) + "\\n");
-process.stdout.write(JSON.stringify(args[0] === "send" ? { ok: true } : []));
+process.stdout.write(JSON.stringify(args[0] === "send" ? { ok: true } : args[0] === "bots" ? [{ id: "bot-1", name: "Bot One" }] : []));
 `);
   fs.chmodSync(gbot, 0o755);
   child = spawn(process.execPath, [path.join(__dirname, "..", "server.js")], {
@@ -82,14 +82,14 @@ test("malformed escapes and wrong methods are errors, not crashes", async () => 
 test("repo files outside public/ are not served", async () => {
   assert.equal(await status("/server.js"), 404);
   assert.equal(await status("/data/unified-catalog.json"), 404);
-  assert.equal(await status("/logs/pending.json"), 404);
+  assert.equal(await status("/logs/server.out"), 404);
   assert.equal(await status("/"), 200);
 });
 
 test("/api/bots returns the gbot roster", async () => {
   const r = await fetch(base + "/api/bots");
   assert.equal(r.status, 200);
-  assert.deepEqual((await r.json()).bots, []);
+  assert.equal((await r.json()).bots[0].id, "bot-1");
 });
 
 test("/api/send messages gbot directly and the Applier API is gone", async () => {
@@ -103,6 +103,16 @@ test("/api/send messages gbot directly and the Applier API is gone", async () =>
   const [args] = fs.readFileSync(gbotCalls, "utf8").trim().split("\n").map(JSON.parse);
   assert.deepEqual(args.slice(0, 2), ["send", "bot-1"]);
   assert.match(args[2], /"Alpha" skill from the "pstack" plugin/);
+  assert.equal(await status("/api/send", {
+    method: "POST",
+    headers: { "content-type": "text/plain", origin: "https://attacker.example", "sec-fetch-site": "cross-site" },
+    body: "{}",
+  }), 403);
+  assert.equal(await status("/api/send", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ plugin_id: "9717366", bot_ref: "--files" }),
+  }), 404);
   assert.equal(await status("/api/apply", { method: "POST" }), 405);
   assert.equal(await status("/api/apply/pending"), 404);
 });

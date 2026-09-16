@@ -49,15 +49,6 @@ function readJson(rel) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-function installedIds() {
-  try {
-    const idx = readJson("data/installed-index.json");
-    return new Set((idx.installed || []).map((p) => String(p.plugin_id)));
-  } catch {
-    return new Set();
-  }
-}
-
 function send(res, status, body, type = "application/json; charset=utf-8") {
   const data = typeof body === "string" ? body : JSON.stringify(body);
   res.writeHead(status, {
@@ -107,7 +98,24 @@ function readBody(req) {
   });
 }
 
+function isSameOriginJson(req) {
+  const contentType = req.headers["content-type"];
+  if (typeof contentType !== "string" || !/^application\/json(?:;|$)/i.test(contentType)) return false;
+  const fetchSite = req.headers["sec-fetch-site"];
+  if (typeof fetchSite === "string" && fetchSite !== "same-origin") return false;
+  const origin = req.headers.origin;
+  if (typeof origin !== "string") return true;
+  try {
+    return new URL(origin).origin === `http://${req.headers.host}`;
+  } catch {
+    return false;
+  }
+}
+
 async function handleSend(req, res) {
+  if (!isSameOriginJson(req)) {
+    return send(res, 403, { ok: false, error: "cross_origin_send_refused" });
+  }
   let body;
   try {
     body = await readBody(req);
@@ -135,6 +143,17 @@ async function handleSend(req, res) {
     ? plugin.local.skills.find((candidate) => candidate.id === skill_id)
     : undefined;
   if (skill_id && !skill) return send(res, 404, { ok: false, error: "skill_not_found" });
+
+  let roster;
+  try {
+    roster = await listBots();
+  } catch (error) {
+    return send(res, 502, { ok: false, error: "gbot_unavailable", message: error.message });
+  }
+  const target = [...roster.bots, ...roster.groups].find((candidate) => candidate.id === bot_ref);
+  if (!target || bot_ref.startsWith("-")) {
+    return send(res, 404, { ok: false, error: "bot_not_found" });
+  }
 
   const subject = skill
     ? `the "${skill.name}" skill from the "${plugin.name}" plugin`
