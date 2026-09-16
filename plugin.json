@@ -1,8 +1,8 @@
 {
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "plugin-library",
-  "displayName": "Plugin Library",
   "version": "0.3.0",
-  "description": "Browse installed and marketplace plugins, read every skill in full, and hand one to a Grok Bot. /plugin-library opens the explorer.",
+  "description": "Browse installed and marketplace plugins, read every skill in full, and open the Plugin Library explorer.",
   "author": {
     "name": "Zack Jackson",
     "url": "https://github.com/ScriptedAlchemy"
@@ -10,16 +10,12 @@
   "homepage": "https://github.com/ScriptedAlchemy/plugin-library",
   "repository": "https://github.com/ScriptedAlchemy/plugin-library",
   "license": "MIT",
-  "category": "Developer Tools",
   "keywords": [
     "plugins",
     "skills",
-    "grok-bot",
-    "gbot",
-    "explorer",
+    "cursor",
+    "claude",
+    "codex",
     "catalog"
-  ],
-  "logo": "assets/logo.svg",
-  "commands": "commands/",
-  "skills": "skills/"
+  ]
 }

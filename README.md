@@ -48,10 +48,20 @@ Default **8787** (`PORT=8787`). Binds loopback (`127.0.0.1`) by default because 
 
 ## Use as a Grok Bot / Cursor plugin
 
-The repo is itself a plugin (`.cursor-plugin/plugin.json`, `commands/`, `skills/`). Install by linking it into the local plugin directory and reloading the window:
+The repo is itself a plugin (`plugin.json`, `.cursor-plugin/plugin.json`, `commands/`, `skills/`). From a checkout, install it with:
 
 ```bash
-ln -sfn "$PWD" ~/.cursor/plugins/local/plugin-library
+node ./install.mjs
+```
+
+That safe-copies the plugin into `~/.cursor/plugins/local/plugin-library` as a real directory, writes a small install receipt, and avoids the external symlink path Cursor skips. The script is portable across macOS and Linux because it uses Node path utilities rather than hard-coded platform paths. Reload Cursor after install.
+
+Nothing in that install path requires the `agent-bundle` package or CLI for end users.
+
+If you want to add it directly from GitHub instead of copying a local checkout, use Cursor's Add Plugin flow with:
+
+```text
+https://github.com/ScriptedAlchemy/plugin-library
 ```
 
 Then in any agent session:
