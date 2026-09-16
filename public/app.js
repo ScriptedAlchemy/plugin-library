@@ -71,7 +71,7 @@
     els.readerStatus.textContent = msg;
     els.readerStatus.className = `status ${cls}`;
   }
-  function onApplyResult(msg, tone) {
+  function onSendResult(msg, tone) {
     toast(msg, tone);
     setStatus(msg, tone);
   }
@@ -171,7 +171,7 @@
       if (p.skill_count) chips.push(`<span class="chip"><b>${p.skill_count}</b> skills</span>`);
       if (p.connector_count) chips.push(`<span class="chip"><b>${p.connector_count}</b> connectors</span>`);
     }
-    chips.push(`<button class="chip link" id="applyPlugin">${p.installed ? "Apply whole plugin to a bot…" : "Install for a bot…"}</button>`);
+    chips.push(`<button class="chip link" id="sendPlugin">Send plugin to a bot…</button>`);
 
     let html = `<div class="hero">
       ${logoHtml(p, "lg")}
@@ -210,7 +210,7 @@
     els.main.scrollTop = 0;
     wireLogos(els.main);
     els.main.querySelectorAll(".card[data-doc]").forEach((c) => c.addEventListener("click", () => navigate(c.dataset.doc)));
-    $("applyPlugin").addEventListener("click", () => Picker.openPicker({ root: els.picker, plugin: p, skill: null, onResult: onApplyResult }));
+    $("sendPlugin").addEventListener("click", () => Picker.openPicker({ root: els.picker, plugin: p, skill: null, onResult: onSendResult }));
     markCurrentCard();
   }
 
@@ -288,8 +288,8 @@
 
     const resolved = p.local ? docTabs(p, kind, id) : null;
     const skill = resolved ? resolved.skill : null;
-    els.readerApply.textContent = skill ? `Apply “${skill.name}” to a bot…` : "Apply plugin to a bot…";
-    els.readerApply.onclick = () => Picker.openPicker({ root: els.picker, plugin: p, skill, onResult: onApplyResult });
+    els.readerApply.textContent = skill ? `Send “${skill.name}” to a bot…` : "Send plugin to a bot…";
+    els.readerApply.onclick = () => Picker.openPicker({ root: els.picker, plugin: p, skill, onResult: onSendResult });
     if (!resolved) {
       els.readerBody.innerHTML = `<div class="notice" style="margin-top:16px">Not found in the local plugin cache.</div>`;
       return;

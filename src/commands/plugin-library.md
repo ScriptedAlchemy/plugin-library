@@ -20,5 +20,5 @@ Launch the explorer and put it in front of the user.
    if `resolved` is false with a non-empty argument, say the argument matched
    nothing and the library root opened instead.
 
-Never POST to `/api/apply` on the user's behalf. Applying a skill to a bot is a
-click the user makes in the UI.
+Never POST to `/api/send` on the user's behalf. Sending a skill to a bot is a
+user-confirmed click in the UI.
