@@ -12,9 +12,9 @@
   "type": "module",
   "scripts": {
     "build": "agent-bundle build",
-    "check": "npm run validate && npm run build && npm run validate:artifact && npm run typecheck && npm test && npm run test:packed",
+    "check": "npm run validate && npm run typecheck && npm test && npm run validate:artifact && npm run test:packed",
     "start": "node server.js",
-    "test": "node --test \"test/**/*.test.js\"",
+    "test": "npm run build && node --test \"test/**/*.test.js\"",
     "test:packed": "node scripts/packed-smoke.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "validate": "agent-bundle validate",

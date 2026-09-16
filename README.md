@@ -98,7 +98,9 @@ node artifact/scripts/plugin-library.mjs stop
 
 The bundled skill also tells agents how to answer skill questions from the read-only API without opening a window, and forbids them from calling `POST /api/apply` — applying to a bot stays a user click.
 
-`npm test` runs the `node --test` suite (front matter, cache dedupe, path containment, apply-status mapping, and an HTTP smoke test against a throwaway cache).
+`npm test` builds the generated artifact, then runs the `node --test` suite
+(installer lifecycle, front matter, cache dedupe, path containment,
+apply-status mapping, and an HTTP smoke test against a throwaway cache).
 
 ## Browse API (read-only)
 
