@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * plugin-library <start|stop|status|open [query]> [--json] [--browser] [--port N]
  *
@@ -15,6 +14,9 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const PID_FILE = path.join(ROOT, "logs", "server.pid");
 const LOG_FILE = path.join(ROOT, "logs", "server.out");
+const SERVER_ENTRY = fs.existsSync(path.join(ROOT, "scripts", "plugin-library-server.mjs"))
+  ? path.join(ROOT, "scripts", "plugin-library-server.mjs")
+  : path.join(ROOT, "server.js");
 
 const args = process.argv.slice(2);
 const flag = (name) => {
@@ -56,7 +58,7 @@ async function start() {
   if (await healthy()) return { started: false, pid: readPid() };
   fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true });
   const log = fs.openSync(LOG_FILE, "a");
-  const child = spawn(process.execPath, [path.join(ROOT, "server.js")], {
+  const child = spawn(process.execPath, [SERVER_ENTRY], {
     cwd: ROOT,
     env: { ...process.env, PORT: String(port) },
     detached: true,

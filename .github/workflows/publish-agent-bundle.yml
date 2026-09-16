@@ -1,0 +1,45 @@
+name: Publish Agent Bundle
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-agent-bundle
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and verify artifact
+        run: npm run check
+
+      - name: Publish generated root
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git -C artifact init --initial-branch agent-bundle-artifact
+          git -C artifact config user.name github-actions[bot]
+          git -C artifact config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git -C artifact add --all
+          git -C artifact commit -m "Publish Agent Bundle from ${GITHUB_SHA}"
+          git -C artifact remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git -C artifact push --force origin HEAD:agent-bundle-artifact

@@ -36,7 +36,10 @@ Regenerate: the screenshots come from a headless-Chrome tour; keep them at 1600�
 
 ## Start
 
-Requires Node 18+, a Cursor plugin cache at `~/.cursor/plugins/cache`, and the [`gbot`](https://github.com/ScriptedAlchemy/grok-bot-cli) CLI on `PATH` for the bot picker (the explorer works without it; the picker reports the missing roster).
+Requires Node 22.19+, a Cursor plugin cache at `~/.cursor/plugins/cache`, and
+the [`gbot`](https://github.com/ScriptedAlchemy/grok-bot-cli) CLI on `PATH` for
+the bot picker (the explorer works without it; the picker reports the missing
+roster).
 
 ```bash
 git clone https://github.com/ScriptedAlchemy/plugin-library.git
@@ -46,35 +49,51 @@ npm start
 
 Default **8787** (`PORT=8787`). Binds loopback (`127.0.0.1`) by default because it shells out to `gbot` and serves cache files without auth; set `HOST=0.0.0.0` only on a trusted network. Open `http://127.0.0.1:8787/`.
 
-## Use as a Grok Bot / Cursor plugin
+## Install
 
-The repo is itself a plugin (`plugin.json`, `.cursor-plugin/plugin.json`, `commands/`, `skills/`). From a checkout, install it with:
+### Cursor from GitHub
+
+The `agent-bundle-artifact` branch is the generated, validated plugin root.
+In Cursor Dashboard → Plugins → Team Marketplaces, choose **Add Marketplace**,
+import `https://github.com/ScriptedAlchemy/plugin-library`, and select the
+`agent-bundle-artifact` branch. Then install **Plugin Library** from Customize.
+Team Marketplaces require a Cursor Teams or Enterprise plan.
+If you previously imported `main`, re-import the marketplace and select the
+generated branch.
+
+For a local proof from a checkout:
 
 ```bash
-node ./install.mjs
+npm ci
+npm run build
+node artifact/install.mjs
+npx --no-install agent-bundle doctor --from artifact --host cursor
 ```
 
-That safe-copies the plugin into `~/.cursor/plugins/local/plugin-library` as a real directory, writes a small install receipt, and avoids the external symlink path Cursor skips. The script is portable across macOS and Linux because it uses Node path utilities rather than hard-coded platform paths. Reload Cursor after install.
+### Grok Bot plugin path
 
-Nothing in that install path requires the `agent-bundle` package or CLI for end users.
+This project treats Grok Bot's plugin path as an Agent Plugins 1.0.0 consumer.
+Provide the generated root from the `agent-bundle-artifact` branch to that
+host-managed flow; its `plugin.json` and `skills/` are the portable projection.
+The `gbot` CLI has no plugin-install command, so the local gate proves the
+portable pack, not remote Grok Bot activation.
 
-If you want to add it directly from GitHub instead of copying a local checkout, use Cursor's Add Plugin flow with:
-
-```text
-https://github.com/ScriptedAlchemy/plugin-library
-```
-
-Then in any agent session:
+In a Cursor agent session:
 
 - `/plugin-library` opens the explorer (embedded browser when the session has one, OS browser otherwise).
 - `/plugin-library pstack` or `/plugin-library why` deep-links to that plugin or skill.
 
-The command drives `bin/plugin-library.mjs`, which is idempotent: it reuses a running server or starts one detached (pid in `logs/server.pid`, output in `logs/server.out`) and waits for `/api/library` to answer.
+On Grok Bot, load the `plugin-library` skill and use its read-only API against
+an already-running explorer; the slash command is Cursor-only.
+
+The command drives `scripts/plugin-library.mjs`, which is idempotent: it reuses
+a running server or starts one detached (pid in `logs/server.pid`, output in
+`logs/server.out`) and waits for `/api/library` to answer.
 
 ```bash
-node bin/plugin-library.mjs open [query] [--json] [--browser]   # start if needed, print/open deep link
-node bin/plugin-library.mjs status --json
-node bin/plugin-library.mjs stop
+node artifact/scripts/plugin-library.mjs open [query] [--json] [--browser]
+node artifact/scripts/plugin-library.mjs status --json
+node artifact/scripts/plugin-library.mjs stop
 ```
 
 The bundled skill also tells agents how to answer skill questions from the read-only API without opening a window, and forbids them from calling `POST /api/apply` — applying to a bot stays a user click.
@@ -113,4 +132,7 @@ Explorer UI confirm counts as the user's Explorer confirm. No silent fleet bot w
 
 ## Data
 
-Catalog JSON in `data/` (from Plugin Catalog), read server-side only. `node ./install.mjs` copies `data/` into the local plugin install so the sidecar can run from that install root. pstack skill grouping: `data/pstack.json`. When a plugin is cached twice (numeric id and slug), the copy marked `<hash>.installed` wins, then the highest version.
+Catalog JSON in `data/` (from Plugin Catalog) is copied to `assets/data/` in
+the built plugin and read server-side only. pstack skill grouping:
+`data/pstack.json`. When a plugin is cached twice (numeric id and slug), the
+copy marked `<hash>.installed` wins, then the highest version.
