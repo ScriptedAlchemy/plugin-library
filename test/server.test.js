@@ -110,6 +110,11 @@ test("/api/send messages gbot directly and the Applier API is gone", async () =>
   }), 403);
   assert.equal(await status("/api/send", {
     method: "POST",
+    headers: { "content-type": "application/json", origin: "https://attacker.example" },
+    body: "{}",
+  }), 403);
+  assert.equal(await status("/api/send", {
+    method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ plugin_id: "9717366", bot_ref: "--files" }),
   }), 404);

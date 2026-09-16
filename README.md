@@ -24,7 +24,7 @@ Every installed plugin gets the same treatment, not only pstack.
 
 ![Cursor Team Kit](screens/07-cursor-team-kit.png)
 
-Marketplace listings show catalog copy and offer an install path.
+Marketplace listings show catalog copy and can be sent to a bot.
 
 ![Marketplace](screens/08-marketplace.png)
 
