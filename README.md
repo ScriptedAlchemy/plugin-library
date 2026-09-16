@@ -56,6 +56,8 @@ node ./install.mjs
 
 That safe-copies the plugin into `~/.cursor/plugins/local/plugin-library` as a real directory, writes a small install receipt, and avoids the external symlink path Cursor skips. Reload Cursor after install.
 
+Nothing in that install path requires the `agent-bundle` package or CLI for end users.
+
 If you want to add it directly from GitHub instead of copying a local checkout, use Cursor's Add Plugin flow with:
 
 ```text
