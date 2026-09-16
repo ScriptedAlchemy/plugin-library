@@ -9,6 +9,8 @@ const { spawnSync } = require("node:child_process");
 
 const artifactRoot = path.join(__dirname, "..", "artifact");
 const installer = path.join(artifactRoot, "install.mjs");
+const { version } = require("../package.json");
+const V = version.replace(/\./g, "\\.");
 
 function makeHome() {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "plugin-library-install-"));
@@ -35,7 +37,7 @@ test("generated installer copies only the artifact and writes a lifecycle receip
 
   const result = runInstaller(home);
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /Installed plugin-library@0\.3\.0/);
+  assert.match(result.stdout, new RegExp(`Installed plugin-library@${V}`));
 
   const installed = path.join(home, ".cursor", "plugins", "local", "plugin-library");
   assert.equal(fs.lstatSync(installed).isSymbolicLink(), false);
@@ -53,7 +55,7 @@ test("generated installer copies only the artifact and writes a lifecycle receip
   );
   assert.equal(receipt.format, "agent-bundle-install-receipt/2");
   assert.equal(receipt.plugin, "plugin-library");
-  assert.equal(receipt.version, "0.3.0");
+  assert.equal(receipt.version, version);
   assert.equal(receipt.host, "cursor");
   assert.equal(receipt.mode, "local");
   assert.equal(receipt.scope, "user");
@@ -72,7 +74,7 @@ test("generated installer is idempotent for identical content", (t) => {
   assert.equal(runInstaller(home).status, 0);
   const second = runInstaller(home);
   assert.equal(second.status, 0, second.stderr);
-  assert.match(second.stdout, /Already installed plugin-library@0\.3\.0/);
+  assert.match(second.stdout, new RegExp(`Already installed plugin-library@${V}`));
 });
 
 test("generated installer plans and performs receipt-owned uninstall", (t) => {
@@ -83,11 +85,11 @@ test("generated installer plans and performs receipt-owned uninstall", (t) => {
   assert.equal(runInstaller(home).status, 0);
   const plan = runInstaller(home, ["--uninstall", "--plan"]);
   assert.equal(plan.status, 0, plan.stderr);
-  assert.match(plan.stdout, /Would uninstall plugin-library@0\.3\.0/);
+  assert.match(plan.stdout, new RegExp(`Would uninstall plugin-library@${V}`));
   assert.equal(fs.existsSync(installed), true);
 
   const uninstall = runInstaller(home, ["--uninstall"]);
   assert.equal(uninstall.status, 0, uninstall.stderr);
-  assert.match(uninstall.stdout, /Uninstalled plugin-library@0\.3\.0/);
+  assert.match(uninstall.stdout, new RegExp(`Uninstalled plugin-library@${V}`));
   assert.equal(fs.existsSync(installed), false);
 });
