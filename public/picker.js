@@ -36,7 +36,7 @@
   /**
    * @param {object} opts
    * @param {HTMLElement} opts.root  container to render into
-   * @param {object} opts.plugin    { plugin_id, name, installed }
+   * @param {object} opts.plugin    { plugin_id, name }
    * @param {object|null} opts.skill { id, name } or null for the whole plugin
    * @param {(msg: string, tone: string) => void} opts.onResult
    */
@@ -148,7 +148,7 @@
       root.innerHTML = `<div class="picker-backdrop" data-close></div>
         <div class="picker" role="dialog" aria-modal="true" aria-label="Choose a bot">
           <div class="picker-head">
-            <div class="what">${plugin.installed ? "Apply" : "Install"} ${thing}</div>
+            <div class="what">Send ${thing}</div>
             <h3>Which bot?</h3>
             <input type="search" data-search placeholder="Search bots and groups…" autocomplete="off" value="${esc(s.query)}" ${showRoster ? "" : "disabled"} />
           </div>
