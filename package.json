@@ -3,16 +3,31 @@
   "version": "0.3.0",
   "private": true,
   "description": "Plugin Library explorer: browse installed and marketplace plugins, read every skill in full, hand one to a bot.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ScriptedAlchemy/plugin-library.git"
+  },
+  "homepage": "https://github.com/ScriptedAlchemy/plugin-library#readme",
+  "type": "module",
   "scripts": {
+    "build": "agent-bundle build",
+    "check": "npm run validate && npm run build && npm run validate:artifact && npm run typecheck && npm test && npm run test:packed",
     "start": "node server.js",
     "test": "node --test \"test/**/*.test.js\"",
+    "test:packed": "node scripts/packed-smoke.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "validate": "agent-bundle validate",
+    "validate:artifact": "agent-bundle validate --artifact artifact",
     "open": "node bin/plugin-library.mjs open",
     "stop": "node bin/plugin-library.mjs stop"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.19.0"
   },
-  "bin": {
-    "plugin-library": "bin/plugin-library.mjs"
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "agent-bundle": "https://pkg.pr.new/ScriptedAlchemy/agent-bundle/agent-bundle@62ffe403c5af73499fe7f5767c6d60be26e250db",
+    "typescript": "^5.9.3"
   }
 }

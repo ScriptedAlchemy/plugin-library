@@ -1,4 +1,7 @@
 node_modules/
+artifact/
+dist/
+.agent-bundle/
 logs/*
 !logs/.gitkeep
 .DS_Store

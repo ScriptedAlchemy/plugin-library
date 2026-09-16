@@ -1,22 +1,27 @@
 #!/usr/bin/env node
-"use strict";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs";
+import http from "node:http";
+import path from "node:path";
+import { URL, fileURLToPath } from "node:url";
 
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
-const { URL } = require("url");
-const { randomUUID } = require("crypto");
+import localPlugins from "./lib/local-plugins.js";
+import bots from "./lib/bots.js";
+
 const {
   findLocalPlugin,
   getLocalPlugin,
   toPublic,
   resolveInside,
   parseFrontMatter,
-} = require("./lib/local-plugins");
-const { listBots } = require("./lib/bots");
+} = localPlugins;
+const { listBots } = bots;
 
-const ROOT = __dirname;
-const PUBLIC_DIR = path.join(ROOT, "public");
+const ENTRY_DIR = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.basename(ENTRY_DIR) === "scripts" ? path.resolve(ENTRY_DIR, "..") : ENTRY_DIR;
+const PUBLIC_DIR = fs.existsSync(path.join(ROOT, "public"))
+  ? path.join(ROOT, "public")
+  : path.join(ROOT, "assets", "public");
 const PORT = Number(process.env.PORT || 8787);
 // Loopback by default: this server shells out to gbot and serves cache files
 // without auth. Set HOST=0.0.0.0 explicitly when exposing over Tailscale.
@@ -60,7 +65,9 @@ const MIME = {
  */
 
 function readJson(rel) {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, rel), "utf8"));
+  const sourcePath = path.join(ROOT, rel);
+  const filePath = fs.existsSync(sourcePath) ? sourcePath : path.join(ROOT, "assets", rel);
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
 function installedIds() {
