@@ -113,4 +113,4 @@ Explorer UI confirm counts as the user's Explorer confirm. No silent fleet bot w
 
 ## Data
 
-Catalog JSON in `data/` (from Plugin Catalog), read server-side only. pstack skill grouping: `data/pstack.json`. When a plugin is cached twice (numeric id and slug), the copy marked `<hash>.installed` wins, then the highest version.
+Catalog JSON in `data/` (from Plugin Catalog), read server-side only. `node ./install.mjs` copies `data/` into the local plugin install so the sidecar can run from that install root. pstack skill grouping: `data/pstack.json`. When a plugin is cached twice (numeric id and slug), the copy marked `<hash>.installed` wins, then the highest version.

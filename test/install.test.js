@@ -49,7 +49,7 @@ test("installBundle copies only the packaged plugin and writes a receipt", async
   assert.equal(fs.existsSync(path.join(installRoot, "logs")), false);
   assert.equal(fs.existsSync(path.join(installRoot, "node_modules")), false);
   assert.equal(fs.existsSync(path.join(installRoot, "screens")), false);
-  assert.equal(fs.existsSync(path.join(installRoot, "data")), false);
+  assert.equal(fs.existsSync(path.join(installRoot, "data", "catalog.json")), true);
   assert.equal(fs.existsSync(path.join(installRoot, "test")), false);
 
   const receipt = JSON.parse(fs.readFileSync(path.join(installRoot, RECEIPT_FILE), "utf8"));

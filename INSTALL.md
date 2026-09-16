@@ -10,7 +10,7 @@ From a checkout, install the local plugin copy with:
 node ./install.mjs
 ```
 
-That safe-copies this repo into `~/.cursor/plugins/local/plugin-library` and writes a small `.agent-bundle-install.json` receipt so repeat installs can no-op when nothing changed. End users do not need the `agent-bundle` package or CLI for this flow. Reload Cursor after install.
+That safe-copies this repo into `~/.cursor/plugins/local/plugin-library` and writes a small `.plugin-library-install.json` receipt so repeat installs can no-op when nothing changed. End users do not need the `agent-bundle` package or CLI for this flow. Reload Cursor after install.
 
 If you would rather add it straight from GitHub, use Cursor's Add Plugin flow with:
 
@@ -48,3 +48,13 @@ codex plugin add plugin-library@plugin-library-marketplace
 
 ## Optional maintainer automation
 
+## Smoke (macOS + Linux)
+
+```bash
+tmpdir="$(mktemp -d)"
+HOME="$tmpdir" node ./install.mjs --plan
+HOME="$tmpdir" node ./install.mjs
+test -f "$tmpdir/.cursor/plugins/local/plugin-library/.plugin-library-install.json"
+test -d "$tmpdir/.cursor/plugins/local/plugin-library/data"
+HOME="$tmpdir" node ./install.mjs --uninstall
+```

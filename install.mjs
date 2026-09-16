@@ -8,9 +8,9 @@ import { fileURLToPath } from "node:url";
 
 const SOURCE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_TARGET_ROOT = path.join(os.homedir(), ".cursor", "plugins", "local");
-const EXCLUDED_TOP_LEVEL = new Set([".git", "logs", "node_modules", "screens", "data", "test"]);
+const EXCLUDED_TOP_LEVEL = new Set([".git", "logs", "node_modules", "screens", "test"]);
 
-export const RECEIPT_FILE = ".agent-bundle-install.json";
+export const RECEIPT_FILE = ".plugin-library-install.json";
 
 function exists(targetPath) {
   try {
