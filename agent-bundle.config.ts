@@ -12,6 +12,7 @@ export default defineConfig({
   plugin: {
     description:
       'Browse installed and marketplace plugins, read every skill in full, and hand one to a Grok Bot.',
+    logo: './assets/logo.svg',
     name: 'plugin-library',
   },
   runtime: { node: '22.19.0' },

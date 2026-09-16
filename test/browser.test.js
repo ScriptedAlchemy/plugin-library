@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { loadBrowserModules } = require("./helpers");
 
-const { Markdown, Picker } = loadBrowserModules();
+const { Markdown } = loadBrowserModules();
 
 test("Markdown.render escapes HTML and renders core blocks", () => {
   const html = Markdown.render("# T <b>\n\npara with `code <x>` and **bold**\n\n- a\n- b\n\n```js\nlet x = 1 < 2;\n```\n\n| h |\n|---|\n| c |\n");
@@ -26,17 +26,4 @@ test("Markdown.render resolves relative links against base and drops unsafe sche
   assert.doesNotMatch(html, /javascript:/);
   assert.match(html, /<a href="https:\/\/x\.y\/z" target="_blank"/);
   assert.equal(Markdown.render("[d](references/x.md)"), "<p>d</p>", "no base: relative links become text");
-});
-
-test("Picker.nextStage maps every apply status to a stage", () => {
-  // Objects come from the vm realm; normalise so deepEqual compares structure only.
-  const n = (j) => JSON.parse(JSON.stringify(Picker.nextStage(j)));
-  assert.deepEqual(n({ ok: false, error: "needs_install_confirm" }), { stage: "confirm-install" });
-  assert.deepEqual(n({ ok: false, error: "needs_mode_confirm" }), { stage: "confirm-nudge" });
-  assert.deepEqual(n({ ok: false, error: "missing_attach_api" }), { stage: "offer-nudge" });
-  assert.equal(n({ ok: true, status: "install_queued" }).tone, "ok");
-  assert.equal(n({ ok: true, status: "nudge_send_queued" }).tone, "ok");
-  assert.equal(n({ ok: true, status: "profile_bake_queued" }).tone, "ok");
-  const bad = n({ ok: false, error: "bad_request", message: "plugin_id and bot_ref are required" });
-  assert.deepEqual(bad, { stage: "done", tone: "err", message: "plugin_id and bot_ref are required" });
 });

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
@@ -15,7 +14,7 @@ const {
   resolveInside,
   parseFrontMatter,
 } = localPlugins;
-const { listBots } = bots;
+const { listBots, sendToBot } = bots;
 
 const ENTRY_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.basename(ENTRY_DIR) === "scripts" ? path.resolve(ENTRY_DIR, "..") : ENTRY_DIR;
@@ -26,8 +25,6 @@ const PORT = Number(process.env.PORT || 8787);
 // Loopback by default: this server shells out to gbot and serves cache files
 // without auth. Set HOST=0.0.0.0 explicitly when exposing over Tailscale.
 const HOST = process.env.HOST || "127.0.0.1";
-const APPLY_LOG = path.join(ROOT, "logs", "apply.jsonl");
-const PENDING_PATH = path.join(ROOT, "logs", "pending.json");
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -45,24 +42,6 @@ const MIME = {
   ".mdc": "text/markdown; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
 };
-
-/**
- * Applier contract (Plugin Applier owns this):
- * POST /api/apply  body: { plugin_id, bot_ref, skill_id?, confirmed?, mode? }
- *   mode: omit | "install" | "apply" | "profile_bake" | "nudge_send"
- *   confirmed: true only after Explorer UI confirm (counts as the user's Explorer confirm)
- *
- * Responses:
- *   bad_request
- *   needs_install_confirm   — not installed, confirmed !== true
- *   install_queued          — not installed, confirmed === true → Applier drains → InstallPlugin
- *   missing_attach_api      — installed, bot skill attach not available yet
- *   profile_bake_queued / nudge_send_queued — only if mode opted in + confirmed
- *   already_installed_noop  — confirmed install request but plugin already installed and no skill/bot apply
- *
- * GET  /api/apply/pending   — undrained queue for Applier
- * POST /api/apply/ack       — { id } mark drained (Applier after InstallPlugin / handling)
- */
 
 function readJson(rel) {
   const sourcePath = path.join(ROOT, rel);
@@ -128,38 +107,7 @@ function readBody(req) {
   });
 }
 
-function ensureLogsDir() {
-  fs.mkdirSync(path.join(ROOT, "logs"), { recursive: true });
-}
-
-function appendApplyLog(entry) {
-  ensureLogsDir();
-  fs.appendFileSync(APPLY_LOG, JSON.stringify(entry) + "\n");
-}
-
-function loadPending() {
-  ensureLogsDir();
-  if (!fs.existsSync(PENDING_PATH)) return [];
-  try {
-    const raw = JSON.parse(fs.readFileSync(PENDING_PATH, "utf8"));
-    return Array.isArray(raw) ? raw : [];
-  } catch {
-    return [];
-  }
-}
-
-function savePending(list) {
-  ensureLogsDir();
-  fs.writeFileSync(PENDING_PATH, JSON.stringify(list, null, 2) + "\n");
-}
-
-function enqueuePending(item) {
-  const list = loadPending();
-  list.push(item);
-  savePending(list);
-}
-
-async function handleApply(req, res) {
+async function handleSend(req, res) {
   let body;
   try {
     body = await readBody(req);
@@ -171,154 +119,43 @@ async function handleApply(req, res) {
   const skill_id =
     body.skill_id != null && body.skill_id !== "" ? String(body.skill_id) : undefined;
   const bot_ref = body.bot_ref != null ? String(body.bot_ref) : "";
-  const confirmed = body.confirmed === true;
-  const mode =
-    body.mode != null && body.mode !== "" ? String(body.mode) : undefined;
-
-  const base = {
-    id: randomUUID(),
-    ts: new Date().toISOString(),
-    plugin_id,
-    skill_id: skill_id || null,
-    bot_ref,
-    confirmed,
-    mode: mode || null,
-  };
-
   if (!plugin_id || !bot_ref) {
-    const response = {
+    return send(res, 400, {
       ok: false,
       error: "bad_request",
       message: "plugin_id and bot_ref are required",
-    };
-    appendApplyLog({ ...base, response });
-    return send(res, 400, response);
+    });
   }
 
-  const installed = installedIds().has(plugin_id);
+  const library = buildLibrary();
+  const plugin = [...library.installed, ...library.marketplace]
+    .find((candidate) => candidate.plugin_id === plugin_id);
+  if (!plugin) return send(res, 404, { ok: false, error: "plugin_not_found" });
+  const skill = skill_id && plugin.local
+    ? plugin.local.skills.find((candidate) => candidate.id === skill_id)
+    : undefined;
+  if (skill_id && !skill) return send(res, 404, { ok: false, error: "skill_not_found" });
 
-  // Account install path
-  if (!installed) {
-    if (!confirmed) {
-      const response = {
-        ok: false,
-        error: "needs_install_confirm",
-        plugin_id,
-        message:
-          "Plugin is not installed. Re-POST with confirmed:true after UI confirm; Applier will InstallPlugin (account-wide, no fleet bot writes).",
-      };
-      appendApplyLog({ ...base, response });
-      return send(res, 200, response);
-    }
-
-    const pending = {
-      ...base,
-      action: "install",
-      status: "queued",
-    };
-    enqueuePending(pending);
-    const response = {
-      ok: true,
-      error: null,
-      status: "install_queued",
-      id: base.id,
-      plugin_id,
-      skill_id: skill_id || null,
-      bot_ref,
-      message:
-        "Queued for Plugin Applier InstallPlugin. No bot profile mutation. Drain via GET /api/apply/pending then POST /api/apply/ack.",
-    };
-    appendApplyLog({ ...base, response, pending });
-    return send(res, 200, response);
-  }
-
-  // Opt-in modes only (never silent)
-  if (mode === "profile_bake" || mode === "nudge_send") {
-    if (!confirmed) {
-      const response = {
-        ok: false,
-        error: "needs_mode_confirm",
-        mode,
-        plugin_id,
-        bot_ref,
-        message: `Re-POST with confirmed:true to queue ${mode} (mutates/messages the named bot).`,
-      };
-      appendApplyLog({ ...base, response });
-      return send(res, 200, response);
-    }
-    const pending = {
-      ...base,
-      action: mode,
-      status: "queued",
-    };
-    enqueuePending(pending);
-    const response = {
-      ok: true,
-      error: null,
-      status: `${mode}_queued`,
-      id: base.id,
-      plugin_id,
-      skill_id: skill_id || null,
-      bot_ref,
-      mode,
-      message: `Queued ${mode} for Applier. Still requires Applier to execute; no silent fleet.`,
-    };
-    appendApplyLog({ ...base, response, pending });
-    return send(res, 200, response);
-  }
-
-  // Default apply = per-bot skill attach — not available yet
-  const response = {
-    ok: false,
-    error: "missing_attach_api",
-    status: "missing_attach_api",
-    plugin_id,
-    skill_id: skill_id || null,
-    bot_ref,
-    message:
-      "Plugin is installed account-wide, but there is no per-bot skill attach API yet. No profile bake / nudge unless mode=profile_bake|nudge_send + confirmed.",
-  };
-  appendApplyLog({ ...base, response });
-  return send(res, 200, response);
-}
-
-async function handleAck(req, res) {
-  let body;
+  const subject = skill
+    ? `the "${skill.name}" skill from the "${plugin.name}" plugin`
+    : `the "${plugin.name}" plugin`;
   try {
-    body = await readBody(req);
-  } catch {
-    return send(res, 400, { ok: false, error: "invalid_json" });
+    await sendToBot(bot_ref, `Use ${subject} for the current task.`);
+    return send(res, 200, {
+      ok: true,
+      status: "sent",
+      plugin_id,
+      skill_id: skill_id || null,
+      bot_ref,
+      message: `Sent ${subject} to the selected Grok Bot target.`,
+    });
+  } catch (error) {
+    return send(res, 502, {
+      ok: false,
+      error: "gbot_unavailable",
+      message: error.message,
+    });
   }
-  const id = body.id != null ? String(body.id) : "";
-  if (!id) {
-    return send(res, 400, { ok: false, error: "bad_request", message: "id required" });
-  }
-  const before = loadPending();
-  const kept = before.filter((p) => p.id !== id);
-  const removed = before.length - kept.length;
-  savePending(kept);
-  const response = {
-    ok: removed > 0,
-    error: removed > 0 ? null : "not_found",
-    id,
-    remaining: kept.length,
-  };
-  appendApplyLog({
-    ts: new Date().toISOString(),
-    kind: "ack",
-    id,
-    response,
-  });
-  return send(res, 200, response);
-}
-
-function handlePending(_req, res) {
-  const pending = loadPending();
-  return send(res, 200, {
-    ok: true,
-    count: pending.length,
-    pending,
-  });
 }
 
 function oneLine(s) {
@@ -416,9 +253,7 @@ const ROUTES = [
   ["GET", "/api/library", handleLibrary],
   ["GET", "/api/local/", handleLocal, "prefix"],
   ["GET", "/api/bots", handleBots],
-  ["POST", "/api/apply", handleApply],
-  ["GET", "/api/apply/pending", handlePending],
-  ["POST", "/api/apply/ack", handleAck],
+  ["POST", "/api/send", handleSend],
 ];
 
 async function dispatch(req, res) {
@@ -456,7 +291,5 @@ server.listen(PORT, HOST, () => {
   console.log(`  UI:      http://127.0.0.1:${port}/`);
   console.log(`  library: GET  /api/library`);
   console.log(`  bots:    GET  /api/bots`);
-  console.log(`  apply:   POST /api/apply`);
-  console.log(`  pending: GET  /api/apply/pending`);
-  console.log(`  ack:     POST /api/apply/ack`);
+  console.log(`  send:    POST /api/send`);
 });
