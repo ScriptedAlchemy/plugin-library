@@ -48,4 +48,3 @@ codex plugin add plugin-library@plugin-library-marketplace
 
 ## Optional maintainer automation
 
-If maintainers use `agent-bundle` while preparing release artifacts, that is optional automation for repo builders only. They commit the emitted files into this repo; consumers still only use the committed `node ./install.mjs` flow, the GitHub add-plugin path, or the official Marketplace once published.
