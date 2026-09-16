@@ -1,6 +1,6 @@
 {
   "name": "plugin-library",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Plugin Library explorer: browse installed and marketplace plugins, read every skill in full, hand one to a bot.",
   "scripts": {
