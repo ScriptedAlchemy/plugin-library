@@ -32,7 +32,12 @@ try {
   const tarball = path.join(packages, packed[0].filename);
   runNpm(["install", "--global", "--prefix", prefix, "--ignore-scripts", tarball]);
 
-  const env = { ...process.env, HOME: home };
+  const env = {
+    ...process.env,
+    HOME: home,
+    XDG_STATE_HOME: path.join(home, ".local", "state"),
+  };
+  delete env.AGENT_BUNDLE_STATE_ROOT;
   const installBin = path.join(prefix, "bin", "plugin-library-install");
   const libraryBin = path.join(prefix, "bin", "plugin-library");
   execFileSync(installBin, ["install", "cursor"], { env, stdio: "inherit" });
