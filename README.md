@@ -1,6 +1,6 @@
 # Plugin Library (sidecar browse UI)
 
-Three-pane explorer for the Plugin Catalog: plugins → skills / agents / rules → the full `SKILL.md` rendered in a reading pane, sourced live from the on-disk plugin cache. "Apply to a bot" picks a target from the live `gbot` roster and confirms before anything is queued.
+Three-pane explorer for the Plugin Catalog: plugins → skills / agents / rules → the full `SKILL.md` rendered in a reading pane, sourced live from the on-disk plugin cache. "Send to a bot" picks a target from the live `gbot` roster and confirms before sending it directly.
 
 ## Tour
 
@@ -18,17 +18,13 @@ Click a skill and the full `SKILL.md` opens in the reading pane. Front matter be
 
 ![A reference file](screens/04-reference-tab.png)
 
-"Apply to a bot" pulls the live roster from `gbot` (bots and groups, with their avatars) and ends in one sentence you confirm. Every `/api/apply` status is turned into plain language; an install that isn't there yet is its own explicit step.
-
-![Pick a bot](screens/05-pick-a-bot.png)
-
-![Confirm](screens/06-confirm.png)
+"Send to a bot" pulls the live roster from `gbot` (bots and groups, with their avatars), asks for confirmation, then calls `gbot send` directly.
 
 Every installed plugin gets the same treatment, not only pstack.
 
 ![Cursor Team Kit](screens/07-cursor-team-kit.png)
 
-Marketplace listings show catalog copy and offer an install path.
+Marketplace listings show catalog copy and can be sent to a bot.
 
 ![Marketplace](screens/08-marketplace.png)
 
@@ -107,11 +103,11 @@ node artifact/scripts/plugin-library.mjs status --json
 node artifact/scripts/plugin-library.mjs stop
 ```
 
-The bundled skill also tells agents how to answer skill questions from the read-only API without opening a window, and forbids them from calling `POST /api/apply` — applying to a bot stays a user click.
+The bundled skill also tells agents how to answer skill questions from the read-only API without opening a window. Sending to a bot stays a user-confirmed click.
 
 `npm test` builds the generated artifact, then runs the `node --test` suite
 (installer lifecycle, front matter, cache dedupe, path containment,
-apply-status mapping, and an HTTP smoke test against a throwaway cache).
+direct `gbot send`, and an HTTP smoke test against a throwaway cache).
 
 ## Browse API (read-only)
 
@@ -124,24 +120,17 @@ apply-status mapping, and an HTTP smoke test against a throwaway cache).
 
 Override the cache root with `CURSOR_PLUGIN_CACHE`, the CLI with `GBOT_BIN`.
 
-## Apply contract (Plugin Applier)
+## Send contract
 
-`POST /api/apply` body:
+The UI calls `POST /api/send` only after the user confirms:
 
 ```json
-{ "plugin_id": "…", "bot_ref": "…", "skill_id?": "…", "confirmed": true, "mode?": "profile_bake|nudge_send" }
+{ "plugin_id": "…", "bot_ref": "…", "skill_id?": "…" }
 ```
 
-| Result | When |
-|--------|------|
-| `needs_install_confirm` | not installed, `confirmed` not true |
-| `install_queued` | not installed, `confirmed: true` → Applier drains → `InstallPlugin` (account only) |
-| `missing_attach_api` | installed; no per-bot skill attach yet (default) |
-| `profile_bake_queued` / `nudge_send_queued` | only if `mode` set + confirmed (opt-in; never silent) |
-
-Also: `GET /api/apply/pending`, `POST /api/apply/ack` `{ "id" }`.
-
-Explorer UI confirm counts as the user's Explorer confirm. No silent fleet bot writes.
+The server verifies the plugin and optional skill against its catalog, then
+runs `gbot send <target> <message> --json`. There is no queue, Applier, install
+branch, or per-bot attach fallback.
 
 ## Data
 

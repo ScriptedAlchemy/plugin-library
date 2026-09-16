@@ -1,9 +1,7 @@
 /* global Markdown */
 /**
- * Bot picker + apply flow. One state object, one render() that switches on
- * `stage`, and one pure function that maps an /api/apply response to the
- * next stage. `confirmed: true` is only ever sent from a stage whose button
- * the user just clicked.
+ * Bot picker + direct send flow. One state object and one render() switch.
+ * The selected target receives a message only after the user confirms.
  */
 (function (global) {
   "use strict";
@@ -35,31 +33,10 @@
     return `<span class="avatar ${esc(shape)}" style="${style}">${esc(initials(b.name))}</span>`;
   }
 
-  /** /api/apply response → next stage. Pure; the only place the contract is interpreted. */
-  function nextStage(json) {
-    const status = json.status || json.error;
-    switch (status) {
-      case "needs_install_confirm":
-        return { stage: "confirm-install" };
-      case "needs_mode_confirm":
-        return { stage: "confirm-nudge" };
-      case "missing_attach_api":
-        return { stage: "offer-nudge" };
-      case "install_queued":
-        return { stage: "done", tone: "ok", message: "Install queued for the Plugin Applier." };
-      case "nudge_send_queued":
-        return { stage: "done", tone: "ok", message: "Nudge queued for the Plugin Applier." };
-      case "profile_bake_queued":
-        return { stage: "done", tone: "ok", message: "Profile bake queued for the Plugin Applier." };
-      default:
-        return { stage: "done", tone: "err", message: json.message || `Unexpected response: ${status}` };
-    }
-  }
-
   /**
    * @param {object} opts
    * @param {HTMLElement} opts.root  container to render into
-   * @param {object} opts.plugin    { plugin_id, name, installed }
+   * @param {object} opts.plugin    { plugin_id, name }
    * @param {object|null} opts.skill { id, name } or null for the whole plugin
    * @param {(msg: string, tone: string) => void} opts.onResult
    */
@@ -100,18 +77,20 @@
       render();
     }
 
-    async function submit(extra) {
+    async function submit() {
       s.stage = "working";
       render();
-      const payload = { plugin_id: plugin.plugin_id, bot_ref: s.selected.id, ...extra };
+      const payload = { plugin_id: plugin.plugin_id, bot_ref: s.selected.id };
       if (skill) payload.skill_id = skill.id;
       try {
-        const r = await fetch("/api/apply", {
+        const r = await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        Object.assign(s, nextStage(await r.json()));
+        const json = await r.json();
+        if (!r.ok || !json.ok) throw new Error(json.message || json.error || `HTTP ${r.status}`);
+        Object.assign(s, { stage: "done", tone: "ok", message: json.message });
       } catch (e) {
         Object.assign(s, { stage: "done", tone: "err", message: String(e.message || e) });
       }
@@ -135,39 +114,14 @@
     }
 
     function confirmHtml() {
-      const verb = plugin.installed ? "Apply" : "Install";
       switch (s.stage) {
         case "confirm":
           return {
-            sentence: `${verb} ${thing} for ${target()}?`,
-            fine: "Nothing changes on the bot until the Plugin Applier confirms it.",
+            sentence: `Send ${thing} to ${target()}?`,
+            fine: "This sends a direct message through gbot.",
             cancel: "Cancel",
-            go: verb,
-            action: () => submit({}),
-          };
-        case "confirm-install":
-          return {
-            sentence: `<b>${esc(plugin.name)}</b> isn't installed yet.`,
-            fine: `Queue an account-wide install for the Plugin Applier, then the apply for ${target()}?`,
-            cancel: "Cancel",
-            go: "Queue install",
-            action: () => submit({ confirmed: true }),
-          };
-        case "offer-nudge":
-          return {
-            sentence: "There's no per-bot attach API yet, so nothing was changed.",
-            fine: `You can instead <b>send ${target()} a message</b> pointing at ${thing}. This posts to the bot's thread.`,
-            cancel: "Done",
-            go: "Send nudge",
-            action: () => submit({ mode: "nudge_send", confirmed: true }),
-          };
-        case "confirm-nudge":
-          return {
-            sentence: `Send ${target()} a message about ${thing}?`,
-            fine: "This posts to the bot's thread once the Plugin Applier drains the queue.",
-            cancel: "Cancel",
-            go: "Send nudge",
-            action: () => submit({ mode: "nudge_send", confirmed: true }),
+            go: "Send",
+            action: submit,
           };
         case "working":
           return { sentence: "Working…", fine: "", cancel: null, go: null, action: null };
@@ -194,7 +148,7 @@
       root.innerHTML = `<div class="picker-backdrop" data-close></div>
         <div class="picker" role="dialog" aria-modal="true" aria-label="Choose a bot">
           <div class="picker-head">
-            <div class="what">${plugin.installed ? "Apply" : "Install"} ${thing}</div>
+            <div class="what">Send ${thing}</div>
             <h3>Which bot?</h3>
             <input type="search" data-search placeholder="Search bots and groups…" autocomplete="off" value="${esc(s.query)}" ${showRoster ? "" : "disabled"} />
           </div>
@@ -253,5 +207,5 @@
     return { close };
   }
 
-  global.Picker = { openPicker, nextStage };
+  global.Picker = { openPicker };
 })(window);

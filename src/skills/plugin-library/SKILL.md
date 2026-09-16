@@ -7,8 +7,8 @@ description: Open or query the Plugin Library explorer when the user wants to br
 
 A local web explorer over the Cursor plugin cache and the Plugin Catalog. Three
 panes: plugins, a plugin's skills / agents / rules, and the full `SKILL.md` of
-whatever is clicked. "Apply to a bot" picks a target from the live `gbot`
-roster and confirms before anything is queued.
+whatever is clicked. "Send to a bot" picks a target from the live `gbot`
+roster and confirms before sending a direct message.
 
 ## Commands
 
@@ -28,5 +28,5 @@ words.
 
 ## Hard rule
 
-Do not call `POST /api/apply`. The Explorer confirm click is the confirm; there
-is no agent-side path around it.
+Do not call `POST /api/send`. Sending a plugin or skill to a bot is a
+user-confirmed Explorer action; there is no agent-side path around it.
