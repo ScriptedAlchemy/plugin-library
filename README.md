@@ -54,7 +54,7 @@ The repo is itself a plugin (`plugin.json`, `.cursor-plugin/plugin.json`, `comma
 node ./install.mjs
 ```
 
-That safe-copies the plugin into `~/.cursor/plugins/local/plugin-library` as a real directory, writes a small install receipt, and avoids the external symlink path Cursor skips. Reload Cursor after install.
+That safe-copies the plugin into `~/.cursor/plugins/local/plugin-library` as a real directory, writes a small install receipt, and avoids the external symlink path Cursor skips. The script is portable across macOS and Linux because it uses Node path utilities rather than hard-coded platform paths. Reload Cursor after install.
 
 Nothing in that install path requires the `agent-bundle` package or CLI for end users.
 

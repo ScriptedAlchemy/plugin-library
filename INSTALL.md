@@ -2,6 +2,8 @@
 
 ## Cursor
 
+Works on both macOS and Linux. The installer uses Node's `os.homedir()` and `path.join()` so the local plugin lands at `~/.cursor/plugins/local/plugin-library` on either platform without any Mac-only path assumptions.
+
 From a checkout, install the local plugin copy with:
 
 ```bash
@@ -28,6 +30,8 @@ npm start
 
 It binds `127.0.0.1:8787` by default. Open <http://127.0.0.1:8787/>.
 
+On this cloud run, Linux install/test coverage is the verified path. After merge, do a macOS Plugin Explorer smoke check in Cursor as the final consumer validation.
+
 ## Claude
 
 ```bash
@@ -44,4 +48,4 @@ codex plugin add plugin-library@plugin-library-marketplace
 
 ## Optional maintainer automation
 
-If maintainers use `agent-bundle` while preparing release artifacts, that is optional automation for repo builders only. It is not required for end-user install or consumption.
+If maintainers use `agent-bundle` while preparing release artifacts, that is optional automation for repo builders only. They commit the emitted files into this repo; consumers still only use the committed `node ./install.mjs` flow, the GitHub add-plugin path, or the official Marketplace once published.
