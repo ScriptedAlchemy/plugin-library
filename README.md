@@ -61,6 +61,17 @@ Team Marketplaces require a Cursor Teams or Enterprise plan.
 If you previously imported `main`, re-import the marketplace and select the
 generated branch.
 
+#### Without team marketplace
+
+```sh
+git clone --branch agent-bundle-artifact --depth 1 \
+  https://github.com/ScriptedAlchemy/plugin-library.git
+cd plugin-library && node ./install.mjs
+```
+
+Reload Cursor (`Developer: Reload Window`). From that clone directory, verify
+with `npx --no-install agent-bundle doctor --from . --host cursor`.
+
 For a local proof from a checkout:
 
 ```bash
