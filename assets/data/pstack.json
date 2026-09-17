@@ -1,0 +1,612 @@
+{
+  "schema": "plugin-catalog.plugin.v1",
+  "source": "GetPlugin",
+  "plugin_id": "9717366",
+  "name": "pstack",
+  "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence.",
+  "installed": true,
+  "install_state": "yes (user)",
+  "category": "MCP",
+  "skill_count": 47,
+  "connector_count": 0,
+  "groups": [
+    {
+      "id": "workflows",
+      "name": "Workflows",
+      "skill_count": 16,
+      "skills": [
+        {
+          "id": "architect",
+          "name": "architect",
+          "description": "Sketch types, signatures, and module structure before code, then stay in the loop while implementation fills in.",
+          "group": "Workflows"
+        },
+        {
+          "id": "arena",
+          "name": "arena",
+          "description": "Spawn N parallel candidates at the same task, pick a base, graft the strongest parts of the losers into it.",
+          "group": "Workflows"
+        },
+        {
+          "id": "blast-radius",
+          "name": "blast-radius",
+          "description": "Find what a change could break somewhere else before it ships, and prove the one fact it's safe because of.",
+          "group": "Workflows"
+        },
+        {
+          "id": "create-verification-skill",
+          "name": "create-verification-skill",
+          "description": "Generate a project-local verification skill that drives your app the way a user does.",
+          "group": "Workflows"
+        },
+        {
+          "id": "figure-it-out",
+          "name": "figure-it-out",
+          "description": "Design an auditable playbook when no narrower one fits: large migrations or multi-part changes.",
+          "group": "Workflows"
+        },
+        {
+          "id": "how",
+          "name": "how",
+          "description": "Code walkthroughs before changing something; placement / ownership / layering questions.",
+          "group": "Workflows"
+        },
+        {
+          "id": "interrogate",
+          "name": "interrogate",
+          "description": "Adversarial / multi-model review to stress-test code and find blind spots.",
+          "group": "Workflows"
+        },
+        {
+          "id": "maintain-verification-skill",
+          "name": "maintain-verification-skill",
+          "description": "Periodic pass that keeps a project's verification skill and feature map honest.",
+          "group": "Workflows"
+        },
+        {
+          "id": "no-comments",
+          "name": "no-comments",
+          "description": "Spawn Comment Sicko, fix accepted findings, and offer encodings for claimed constraints.",
+          "group": "Workflows"
+        },
+        {
+          "id": "recall",
+          "name": "recall",
+          "description": "Reconstruct recent working context from chat history, live state, and shared record.",
+          "group": "Workflows"
+        },
+        {
+          "id": "reflect",
+          "name": "reflect",
+          "description": "Spawn parallel review subagents over the transcript; route learnings into skill edits.",
+          "group": "Workflows"
+        },
+        {
+          "id": "show-me-your-work",
+          "name": "show-me-your-work",
+          "description": "Keep a reviewable TSV decision trail for long-running or unattended work.",
+          "group": "Workflows"
+        },
+        {
+          "id": "swarm",
+          "name": "swarm",
+          "description": "Fan out N parallel workers, drain them, and return one report.",
+          "group": "Workflows"
+        },
+        {
+          "id": "tdd",
+          "name": "tdd",
+          "description": "Use when explicitly asked for TDD, a failing test, or a cheap local regression target.",
+          "group": "Workflows"
+        },
+        {
+          "id": "teach",
+          "name": "teach",
+          "description": "Explain a body of work plainly by weaving how and why into one clear explanation.",
+          "group": "Workflows"
+        },
+        {
+          "id": "why",
+          "name": "why",
+          "description": "Design rationale, regressions, postmortems, or data-backed thresholds.",
+          "group": "Workflows"
+        }
+      ]
+    },
+    {
+      "id": "bot-style",
+      "name": "Bot+style",
+      "skill_count": 5,
+      "skills": [
+        {
+          "id": "automate-me",
+          "name": "automate-me",
+          "description": "Create/update/refresh a -mode skill from preferences or working style.",
+          "group": "Bot+style"
+        },
+        {
+          "id": "bro",
+          "name": "bro",
+          "description": "Restate the last message in plain human language, with no jargon.",
+          "group": "Bot+style"
+        },
+        {
+          "id": "make-bot-ui",
+          "name": "make-bot-ui",
+          "description": "Build a custom UI that wakes a Grok Bot over a webhook.",
+          "group": "Bot+style"
+        },
+        {
+          "id": "poteto-mode",
+          "name": "poteto-mode",
+          "description": "poteto's agent style: concise detailed responses, deliberate subagents, unslopped prose, simple code, verified work.",
+          "group": "Bot+style"
+        },
+        {
+          "id": "setup-pstack",
+          "name": "setup-pstack",
+          "description": "Configure which models pstack uses per role and at what reasoning budget.",
+          "group": "Bot+style"
+        }
+      ]
+    },
+    {
+      "id": "principles",
+      "name": "Principles",
+      "skill_count": 23,
+      "skills": [
+        {
+          "id": "principle-attack-the-premise",
+          "name": "principle-attack-the-premise",
+          "description": "When two or more fixes that share one premise have failed the same gate, attack the shared premise.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-boundary-discipline",
+          "name": "principle-boundary-discipline",
+          "description": "Concentrate guards at system boundaries (CLI, config, network, external APIs).",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-build-the-lever",
+          "name": "principle-build-the-lever",
+          "description": "For non-trivial work, build the tool that does it or proves it.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-encode-lessons-in-structure",
+          "name": "principle-encode-lessons-in-structure",
+          "description": "Encode recurring corrections as lints, metadata, or structure \u2014 not repeated prose.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-exhaust-the-design-space",
+          "name": "principle-exhaust-the-design-space",
+          "description": "For novel UI/architecture with no precedent, build 2\u20133 competing prototypes and compare.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-experience-first",
+          "name": "principle-experience-first",
+          "description": "Choose user delight over implementation convenience; ship fewer polished features.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-fix-root-causes",
+          "name": "principle-fix-root-causes",
+          "description": "Trace each symptom to its root cause; reproduce first; resist nil-check patches.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-foundational-thinking",
+          "name": "principle-foundational-thinking",
+          "description": "Before writing logic: choose core types and data structures; sequence scaffold vs feature.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-guard-the-context-window",
+          "name": "principle-guard-the-context-window",
+          "description": "Route bulk to subagents; keep summaries in the main context.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-laziness-protocol",
+          "name": "principle-laziness-protocol",
+          "description": "Bias toward deletion and the smallest change when tempted to add abstractions.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-make-operations-idempotent",
+          "name": "principle-make-operations-idempotent",
+          "description": "Design commands and loops that converge to the same end state amid retries.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-migrate-callers-then-delete-legacy-apis",
+          "name": "principle-migrate-callers-then-delete-legacy-apis",
+          "description": "Migrate callers and delete the old API in the same wave.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-minimize-reader-load",
+          "name": "principle-minimize-reader-load",
+          "description": "Count layers between question and answer; reduce hidden state in the reader's head.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-model-the-domain",
+          "name": "principle-model-the-domain",
+          "description": "Encode the domain in a structure the code can share instead of repeating shape assumptions.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-never-block-on-the-human",
+          "name": "principle-never-block-on-the-human",
+          "description": "On reversible work, proceed and present the result; let the human course-correct after.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-outcome-oriented-execution",
+          "name": "principle-outcome-oriented-execution",
+          "description": "Converge on the target architecture; don't preserve smooth intermediate states as goals.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-prove-it-works",
+          "name": "principle-prove-it-works",
+          "description": "Verify against the real artifact before declaring done.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-redesign-from-first-principles",
+          "name": "principle-redesign-from-first-principles",
+          "description": "Integrate new requirements as if they had been foundational from day one.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-separate-before-serializing-shared-state",
+          "name": "principle-separate-before-serializing-shared-state",
+          "description": "Eliminate shared mutable state first; serialize structurally only if needed.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-sequence-verifiable-units",
+          "name": "principle-sequence-verifiable-units",
+          "description": "Break multi-step work into small units that can each be verified.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-subtract-before-you-add",
+          "name": "principle-subtract-before-you-add",
+          "description": "Remove dead code and stubs first, then build on the cleaned surface.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-test-behavior-not-implementation",
+          "name": "principle-test-behavior-not-implementation",
+          "description": "Call code the way users do; assert observed results against literal expectations.",
+          "group": "Principles"
+        },
+        {
+          "id": "principle-type-system-discipline",
+          "name": "principle-type-system-discipline",
+          "description": "Make illegal states unrepresentable in types and signatures.",
+          "group": "Principles"
+        }
+      ]
+    },
+    {
+      "id": "language",
+      "name": "Language",
+      "skill_count": 3,
+      "skills": [
+        {
+          "id": "technical-writing",
+          "name": "technical-writing",
+          "description": "Layered technical-writing standard: Di\u00e1taxis, Google developer style, STE, Global English.",
+          "group": "Language"
+        },
+        {
+          "id": "typescript-best-practices",
+          "name": "typescript-best-practices",
+          "description": "TypeScript best practices when reading or editing any .ts or .tsx file.",
+          "group": "Language"
+        },
+        {
+          "id": "unslop",
+          "name": "unslop",
+          "description": "Cut AI tells from any writing. Must always apply.",
+          "group": "Language"
+        }
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "architect",
+      "name": "architect",
+      "description": "Sketch types, signatures, and module structure before code, then stay in the loop while implementation fills in.",
+      "group": "Workflows"
+    },
+    {
+      "id": "arena",
+      "name": "arena",
+      "description": "Spawn N parallel candidates at the same task, pick a base, graft the strongest parts of the losers into it.",
+      "group": "Workflows"
+    },
+    {
+      "id": "automate-me",
+      "name": "automate-me",
+      "description": "Create/update/refresh a -mode skill from preferences or working style.",
+      "group": "Bot+style"
+    },
+    {
+      "id": "blast-radius",
+      "name": "blast-radius",
+      "description": "Find what a change could break somewhere else before it ships, and prove the one fact it's safe because of.",
+      "group": "Workflows"
+    },
+    {
+      "id": "bro",
+      "name": "bro",
+      "description": "Restate the last message in plain human language, with no jargon.",
+      "group": "Bot+style"
+    },
+    {
+      "id": "create-verification-skill",
+      "name": "create-verification-skill",
+      "description": "Generate a project-local verification skill that drives your app the way a user does.",
+      "group": "Workflows"
+    },
+    {
+      "id": "figure-it-out",
+      "name": "figure-it-out",
+      "description": "Design an auditable playbook when no narrower one fits: large migrations or multi-part changes.",
+      "group": "Workflows"
+    },
+    {
+      "id": "how",
+      "name": "how",
+      "description": "Code walkthroughs before changing something; placement / ownership / layering questions.",
+      "group": "Workflows"
+    },
+    {
+      "id": "interrogate",
+      "name": "interrogate",
+      "description": "Adversarial / multi-model review to stress-test code and find blind spots.",
+      "group": "Workflows"
+    },
+    {
+      "id": "maintain-verification-skill",
+      "name": "maintain-verification-skill",
+      "description": "Periodic pass that keeps a project's verification skill and feature map honest.",
+      "group": "Workflows"
+    },
+    {
+      "id": "make-bot-ui",
+      "name": "make-bot-ui",
+      "description": "Build a custom UI that wakes a Grok Bot over a webhook.",
+      "group": "Bot+style"
+    },
+    {
+      "id": "no-comments",
+      "name": "no-comments",
+      "description": "Spawn Comment Sicko, fix accepted findings, and offer encodings for claimed constraints.",
+      "group": "Workflows"
+    },
+    {
+      "id": "poteto-mode",
+      "name": "poteto-mode",
+      "description": "poteto's agent style: concise detailed responses, deliberate subagents, unslopped prose, simple code, verified work.",
+      "group": "Bot+style"
+    },
+    {
+      "id": "principle-attack-the-premise",
+      "name": "principle-attack-the-premise",
+      "description": "When two or more fixes that share one premise have failed the same gate, attack the shared premise.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-boundary-discipline",
+      "name": "principle-boundary-discipline",
+      "description": "Concentrate guards at system boundaries (CLI, config, network, external APIs).",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-build-the-lever",
+      "name": "principle-build-the-lever",
+      "description": "For non-trivial work, build the tool that does it or proves it.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-encode-lessons-in-structure",
+      "name": "principle-encode-lessons-in-structure",
+      "description": "Encode recurring corrections as lints, metadata, or structure \u2014 not repeated prose.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-exhaust-the-design-space",
+      "name": "principle-exhaust-the-design-space",
+      "description": "For novel UI/architecture with no precedent, build 2\u20133 competing prototypes and compare.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-experience-first",
+      "name": "principle-experience-first",
+      "description": "Choose user delight over implementation convenience; ship fewer polished features.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-fix-root-causes",
+      "name": "principle-fix-root-causes",
+      "description": "Trace each symptom to its root cause; reproduce first; resist nil-check patches.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-foundational-thinking",
+      "name": "principle-foundational-thinking",
+      "description": "Before writing logic: choose core types and data structures; sequence scaffold vs feature.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-guard-the-context-window",
+      "name": "principle-guard-the-context-window",
+      "description": "Route bulk to subagents; keep summaries in the main context.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-laziness-protocol",
+      "name": "principle-laziness-protocol",
+      "description": "Bias toward deletion and the smallest change when tempted to add abstractions.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-make-operations-idempotent",
+      "name": "principle-make-operations-idempotent",
+      "description": "Design commands and loops that converge to the same end state amid retries.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-migrate-callers-then-delete-legacy-apis",
+      "name": "principle-migrate-callers-then-delete-legacy-apis",
+      "description": "Migrate callers and delete the old API in the same wave.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-minimize-reader-load",
+      "name": "principle-minimize-reader-load",
+      "description": "Count layers between question and answer; reduce hidden state in the reader's head.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-model-the-domain",
+      "name": "principle-model-the-domain",
+      "description": "Encode the domain in a structure the code can share instead of repeating shape assumptions.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-never-block-on-the-human",
+      "name": "principle-never-block-on-the-human",
+      "description": "On reversible work, proceed and present the result; let the human course-correct after.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-outcome-oriented-execution",
+      "name": "principle-outcome-oriented-execution",
+      "description": "Converge on the target architecture; don't preserve smooth intermediate states as goals.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-prove-it-works",
+      "name": "principle-prove-it-works",
+      "description": "Verify against the real artifact before declaring done.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-redesign-from-first-principles",
+      "name": "principle-redesign-from-first-principles",
+      "description": "Integrate new requirements as if they had been foundational from day one.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-separate-before-serializing-shared-state",
+      "name": "principle-separate-before-serializing-shared-state",
+      "description": "Eliminate shared mutable state first; serialize structurally only if needed.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-sequence-verifiable-units",
+      "name": "principle-sequence-verifiable-units",
+      "description": "Break multi-step work into small units that can each be verified.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-subtract-before-you-add",
+      "name": "principle-subtract-before-you-add",
+      "description": "Remove dead code and stubs first, then build on the cleaned surface.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-test-behavior-not-implementation",
+      "name": "principle-test-behavior-not-implementation",
+      "description": "Call code the way users do; assert observed results against literal expectations.",
+      "group": "Principles"
+    },
+    {
+      "id": "principle-type-system-discipline",
+      "name": "principle-type-system-discipline",
+      "description": "Make illegal states unrepresentable in types and signatures.",
+      "group": "Principles"
+    },
+    {
+      "id": "recall",
+      "name": "recall",
+      "description": "Reconstruct recent working context from chat history, live state, and shared record.",
+      "group": "Workflows"
+    },
+    {
+      "id": "reflect",
+      "name": "reflect",
+      "description": "Spawn parallel review subagents over the transcript; route learnings into skill edits.",
+      "group": "Workflows"
+    },
+    {
+      "id": "setup-pstack",
+      "name": "setup-pstack",
+      "description": "Configure which models pstack uses per role and at what reasoning budget.",
+      "group": "Bot+style"
+    },
+    {
+      "id": "show-me-your-work",
+      "name": "show-me-your-work",
+      "description": "Keep a reviewable TSV decision trail for long-running or unattended work.",
+      "group": "Workflows"
+    },
+    {
+      "id": "swarm",
+      "name": "swarm",
+      "description": "Fan out N parallel workers, drain them, and return one report.",
+      "group": "Workflows"
+    },
+    {
+      "id": "tdd",
+      "name": "tdd",
+      "description": "Use when explicitly asked for TDD, a failing test, or a cheap local regression target.",
+      "group": "Workflows"
+    },
+    {
+      "id": "teach",
+      "name": "teach",
+      "description": "Explain a body of work plainly by weaving how and why into one clear explanation.",
+      "group": "Workflows"
+    },
+    {
+      "id": "technical-writing",
+      "name": "technical-writing",
+      "description": "Layered technical-writing standard: Di\u00e1taxis, Google developer style, STE, Global English.",
+      "group": "Language"
+    },
+    {
+      "id": "typescript-best-practices",
+      "name": "typescript-best-practices",
+      "description": "TypeScript best practices when reading or editing any .ts or .tsx file.",
+      "group": "Language"
+    },
+    {
+      "id": "unslop",
+      "name": "unslop",
+      "description": "Cut AI tells from any writing. Must always apply.",
+      "group": "Language"
+    },
+    {
+      "id": "why",
+      "name": "why",
+      "description": "Design rationale, regressions, postmortems, or data-backed thresholds.",
+      "group": "Workflows"
+    }
+  ],
+  "notes": [
+    "Potato maps to skill id poteto-mode, not a separate marketplace plugin.",
+    "Group labels are Catalog suggestions for Explorer render (Workflows / Bot+style / Principles / Language); skill ids/names grounded in GetPlugin."
+  ]
+}
