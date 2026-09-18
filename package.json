@@ -28,6 +28,6 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "agent-bundle": "https://pkg.pr.new/ScriptedAlchemy/agent-bundle/agent-bundle@ab5ae66e1d9c2829a092640c586e2b3eacc4be88",
-    "typescript": "^5.9.3"
+    "typescript": "^7.0.0"
   }
 }
