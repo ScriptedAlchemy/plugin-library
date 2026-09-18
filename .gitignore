@@ -1,4 +1,5 @@
 node_modules/
+# Exclude generated files from build source discovery; CI force-adds this tree.
 artifact/
 dist/
 .agent-bundle/

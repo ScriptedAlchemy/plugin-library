@@ -32,14 +32,13 @@ jobs:
       - name: Build and verify artifact
         run: npm run check
 
-      - name: Publish generated root
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Commit generated artifact on main
         run: |
-          git -C artifact init --initial-branch agent-bundle-artifact
-          git -C artifact config user.name github-actions[bot]
-          git -C artifact config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git -C artifact add --all
-          git -C artifact commit -m "Publish Agent Bundle from ${GITHUB_SHA}"
-          git -C artifact remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git -C artifact push --force origin HEAD:agent-bundle-artifact
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add --force --all artifact
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "build: refresh committed Agent Bundle from ${GITHUB_SHA}"
+          git push origin HEAD:main
