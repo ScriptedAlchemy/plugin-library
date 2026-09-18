@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
-    "agent-bundle": "https://pkg.pr.new/ScriptedAlchemy/agent-bundle/agent-bundle@ab5ae66e1d9c2829a092640c586e2b3eacc4be88",
+    "agent-bundle": "https://pkg.pr.new/ScriptedAlchemy/agent-bundle/agent-bundle@e5bdc7d25e45b1a8e6abeba64e6865871ecf6026",
     "typescript": "^7.0.0"
   }
 }

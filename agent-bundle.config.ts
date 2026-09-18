@@ -8,7 +8,7 @@ export default defineConfig({
   assets: ['public', 'data'],
   lib: false,
   marketplace: true,
-  output: { distPath: 'artifact' },
+  output: { distPath: 'artifact', repositoryMarketplace: true },
   plugin: {
     description:
       'Browse installed and marketplace plugins, read every skill in full, and hand one to a Grok Bot.',

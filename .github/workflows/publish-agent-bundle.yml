@@ -33,15 +33,6 @@ jobs:
       - name: Build and verify artifact
         run: npm run check
 
-      - name: Generate repository marketplace from artifact
-        run: |
-          node --input-type=module <<'JS'
-          import { readFileSync, writeFileSync } from 'node:fs';
-          const marketplace = JSON.parse(readFileSync('artifact/.cursor-plugin/marketplace.json', 'utf8'));
-          for (const plugin of marketplace.plugins) plugin.source = './artifact';
-          writeFileSync('.cursor-plugin/marketplace.json', JSON.stringify(marketplace, null, 2) + '\n');
-          JS
-
       - name: Commit generated artifact on main
         run: |
           git config user.name github-actions[bot]
