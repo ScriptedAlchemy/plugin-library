@@ -1,0 +1,1 @@
+{"name":"plugin-library-marketplace","owner":{"name":"plugin-library"},"plugins":[{"description":"Browse installed and marketplace plugins, read every skill in full, and hand one to a Grok Bot.","name":"plugin-library","source":"./"}]}

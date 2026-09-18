@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -32,14 +33,22 @@ jobs:
       - name: Build and verify artifact
         run: npm run check
 
-      - name: Publish generated root
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Generate repository marketplace from artifact
         run: |
-          git -C artifact init --initial-branch agent-bundle-artifact
-          git -C artifact config user.name github-actions[bot]
-          git -C artifact config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git -C artifact add --all
-          git -C artifact commit -m "Publish Agent Bundle from ${GITHUB_SHA}"
-          git -C artifact remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git -C artifact push --force origin HEAD:agent-bundle-artifact
+          node --input-type=module <<'JS'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const marketplace = JSON.parse(readFileSync('artifact/.cursor-plugin/marketplace.json', 'utf8'));
+          for (const plugin of marketplace.plugins) plugin.source = './artifact';
+          writeFileSync('.cursor-plugin/marketplace.json', JSON.stringify(marketplace, null, 2) + '\n');
+          JS
+
+      - name: Commit generated artifact on main
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add --force --all artifact .cursor-plugin/marketplace.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "build: refresh committed Agent Bundle from ${GITHUB_SHA}"
+          git push origin HEAD:main

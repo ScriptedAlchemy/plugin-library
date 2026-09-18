@@ -1,0 +1,1 @@
+{"$schema":"https://agent-plugins.org/schemas/1.0.0/plugin.schema.json","description":"Browse installed and marketplace plugins, read every skill in full, and hand one to a Grok Bot.","homepage":"https://github.com/ScriptedAlchemy/plugin-library#readme","license":"MIT","name":"plugin-library","repository":"https://github.com/ScriptedAlchemy/plugin-library","version":"0.4.0"}
