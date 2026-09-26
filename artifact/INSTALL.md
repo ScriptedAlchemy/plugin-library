@@ -28,37 +28,38 @@ manifest-declared `hooks/hooks.json` from that directory; plugin hooks run from 
 The installer writes an install receipt (`.agent-bundle-install.json`: plugin, version, content hash,
 owned files) beside the plugin manifest. Re-running `node ./install.mjs` on an identical artifact
 is a no-op that says so. When the installed copy has the same version but different content, the
-installer replaces its owned files in place and leaves runtime state (`state/`) untouched:
+installer replaces its owned files in place and leaves unowned entries untouched:
 
 ```sh
 node ./install.mjs            # same-version content drift of a receipt-managed copy is replaced
-node ./install.mjs --replace  # also replace a different installed version, or adopt a pre-receipt copy
+node ./install.mjs --replace  # also replace a different installed version
 ```
 
-`--force` is an alias for `--replace`. A directory that is not an agent-bundle install of this
-plugin is always refused with an installed-versus-artifact content-hash comparison; remove it
-manually. The optional `agent-bundle` CLI applies the same policy through
+A directory without a receipt naming this plugin (including a copy placed before install receipts
+existed) is foreign and always refused with an installed-versus-artifact content-hash comparison;
+remove it manually and reinstall. The optional `agent-bundle` CLI applies the same policy through
 `agent-bundle install cursor --from ./ [--replace]`.
 
 ### Uninstall
 
 ```sh
 node ./install.mjs --uninstall --plan                        # print exactly what would be removed
-node ./install.mjs --uninstall                               # remove the receipt-owned files; keep state/
-node ./install.mjs --uninstall --purge-data --confirm-purge  # also remove durable runtime state
+node ./install.mjs --uninstall                               # remove the receipt-owned files; keep durable state
+node ./install.mjs --uninstall --purge-data --confirm-purge  # also remove receipt-owned durable runtime state
 node ./install.mjs --uninstall --mode marketplace            # remove a staged marketplace repository
 ```
 
 Uninstall removes exactly what the receipt owns: the listed files, the directories the installer
 created (including `~/.cursor/plugins/local` when the installer made it), and nothing else. Durable
-runtime state under `state/` (state kernel, notices journal) — and, for an Agent Plugins pack with a stdio
-server, the `~/.cursor/agent-bundle/plugin-data/<name>` directory the receipt records as `PLUGIN_DATA` — is kept
-unless `--purge-data --confirm-purge` is passed (a kept data directory leaves a remnant receipt behind so a later
-purge still finds it; an empty one is pruned); unowned files are left in place and listed. A supported older
-receipt with no recorded state location retains the current environment's default as unproven; a keep-data run
-cannot turn that observation into later purge authority. A directory without a receipt is refused unless
-`--force` (which removes a pre-receipt legacy copy by its inventory); owned content that no longer matches
-the receipt is refused unless `--force`; a directory that is not this plugin's install is always refused.
+runtime state (the framework state roots the receipt records with ownership evidence) — and, for an Agent
+Plugins pack with a stdio server, the `~/.cursor/agent-bundle/plugin-data/<name>` directory the receipt records
+as `PLUGIN_DATA` — is kept unless `--purge-data --confirm-purge` is passed (a kept data directory leaves a
+remnant receipt behind so a later purge still finds it; an empty one is pruned); unowned entries, including a
+`state/` directory beside the plugin, are left in place and listed. A receipt with no recorded state location
+(written before the install could record it) retains the current environment's default as unproven; a
+keep-data run cannot turn that observation into later purge authority. A directory without a receipt naming
+this plugin is foreign and always refused, with or without `--force`; owned content that no longer matches
+the receipt is refused unless `--force`.
 A second run is a `Not installed` no-op. With the optional `agent-bundle` CLI,
 `agent-bundle uninstall cursor --from ./ [--mode marketplace]` applies the same policy, and
 `agent-bundle doctor --from ./` shows the lifecycle stage (placed, registered, enabled, active) with
@@ -142,21 +143,21 @@ other clients; the recorded clients above name which of them expand the placehol
 ### Reinstall after a same-version rebuild
 
 The installer records an install receipt (`.agent-bundle-install.json`) and replaces its owned files in
-place when the same version was rebuilt with different content; runtime state (`state/`) is never
-touched. Pass `--replace` (alias `--force`) to replace a different installed version or to adopt a
-copy installed before receipts existed. Foreign directories are refused with a content-hash
-comparison. For a client that manages its own copy, remove and re-add the plugin through that client
-when only content changed at the same version.
+place when the same version was rebuilt with different content; unowned entries are never
+touched. Pass `--replace` to replace a different installed version. A directory without a receipt
+naming this plugin (including a copy installed before receipts existed) is foreign and refused with a
+content-hash comparison; remove it manually. For a client that manages its own copy, remove and re-add
+the plugin through that client when only content changed at the same version.
 
 ### Uninstall
 
 ```sh
 node ./install.mjs --uninstall --plan                        # print exactly what would be removed
-node ./install.mjs --uninstall                               # remove the receipt-owned files; keep state/
-node ./install.mjs --uninstall --purge-data --confirm-purge  # also remove durable runtime state
+node ./install.mjs --uninstall                               # remove the receipt-owned files; keep durable state
+node ./install.mjs --uninstall --purge-data --confirm-purge  # also remove receipt-owned durable runtime state
 ```
 
 Uninstall removes exactly what the receipt owns (files, installer-created directories) and keeps
-durable runtime state under `state/` (and the recorded `PLUGIN_DATA` directory of an Agent Plugins pack)
-unless `--purge-data --confirm-purge` is passed. A missing
-receipt or modified owned content is refused unless `--force`; foreign directories are always refused.
+the durable runtime state the receipt records (and the recorded `PLUGIN_DATA` directory of an Agent Plugins
+pack) unless `--purge-data --confirm-purge` is passed. Modified owned content is refused unless `--force`;
+a directory without a receipt naming this plugin is foreign and always refused.
